@@ -84,8 +84,11 @@ class StopTime(object):
             pk_stop=i['zastavka']
             self.trip=Trip().get_data(data_trips,data_routes,pk_trip)
             self.stop=Stop().get_data(data_stops,pk_stop)
-            self.poradi=i['poradi']
+            self.rank=i['poradi']
             return self
+    
+    def __str__(self):
+        return f"{id(self)}:{self.trip}, {id(self)}:{self.stop}, {id(self)}:{self.rank}"
 
 class StopSegment(object):
     def __init__(self):
@@ -97,4 +100,4 @@ class StopSegment(object):
 
 #print(our_data_stops)
 #print(StopTime().get_data(our_data_stop_times,our_data_trips,our_data_stops,our_data_routes))
-print(Route().get_data(our_data_routes,'L14'))
+print(StopTime().get_data(our_data_stop_times,our_data_trips,our_data_stops,our_data_routes))
