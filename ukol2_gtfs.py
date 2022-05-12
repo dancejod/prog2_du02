@@ -31,17 +31,16 @@ class Trip(object):
         self.stoptime_list.append(stoptime) """
 
 class StopTime(object):
-    def __init__(self, stop_time_index, trip, stop, stop_sequence, deptime, arrtime):
-        self.stop_time_index=stop_time_index
+    def __init__(self, trip, stop, stop_sequence, deptime, arrtime):
         self.trip=trip
         self.stop=stop
-        self.rank=stop_sequence
+        self.stop_sequence=stop_sequence
         self.departure=deptime
         self.arrival=arrtime
         #self.trip.add_stoptime(self)
     
     def __str__(self):
-        return f"{id(self)}:{self.trip}, {id(self)}:{self.stop}, {id(self)}:{self.rank}"
+        return f"{id(self)}:{self.trip}, {id(self)}:{self.stop}, {id(self)}:{self.stop_sequence}"
 
 class StopSegment(object):
 
@@ -61,7 +60,7 @@ class StopSegment(object):
             else:
                 #kdyz to neni prvni zastavka...
                 if self.to_stop == None:
-                    # kdyz je cilova none, priradime ji current, to by se melo asi stat jen u rank = 2, jinak se z puvodni cilovy stane vychozi a cilova je current
+                    # kdyz je cilova none, priradime ji current, to by se melo asi stat jen u stop_sequence = 2, jinak se z puvodni cilovy stane vychozi a cilova je current
                     self.to_stop = current_stop_time.stop
                 else:
                     self.from_stop = self.to_stop
@@ -95,16 +94,13 @@ with open('PID_GTFS/trips.txt',encoding="utf-8", newline='') as raw_trips:
 with open('PID_GTFS/stop_times.txt',encoding="utf-8", newline='') as raw_stop_times:
     stop_times_reader = csv.DictReader(raw_stop_times)
     for row in stop_times_reader:
-        cesta=row['trip_id'] #matuce
-        zastavka=row['stop_id']
-        poradi=row['stop_sequence']
-        prichod=row['arrival_time']
-        odchod=row['departure_time']
-        our_data_stop_times.append({'cesta':cesta,'zastavka':zastavka,'poradi':poradi, 'prichod': prichod, 'odchod': odchod})
+        trip_pk = row['trip_id']
+        stop_pk = row['stop_id']
+        stop_time = StopTime(our_data_trips.get(trip_pk), our_data_stops.get(stop_pk), row['stop_sequence'], row['departure_time'], row['arrival_time'])
+        our_data_stop_times.append(stop_time)
 
 
 
-StopSegment().create_segment(our_data_stop_times,our_data_trips,our_data_stops,our_data_routes)
 
 #print(StopTime().get_data(our_data_stop_times,our_data_trips,our_data_stops,our_data_routes))
 #print(StopTime().get_data(our_data_stop_times,our_data_trips,our_data_stops,our_data_routes))
