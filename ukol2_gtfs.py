@@ -55,10 +55,10 @@ class Trip(object):
     def __init__ (self, trip_id, route):
         self.id=trip_id
         self.route=route
-        self.stoptime_list = []
+        #self.stoptime_list = []
 
-    def add_stoptime(self, stoptime):
-        self.stoptime_list.append(stoptime)
+    """ def add_stoptime(self, stoptime):
+        self.stoptime_list.append(stoptime) """
 
 class StopTime(object):
     def __init__(self, trip, stop, stop_sequence, deptime, arrtime):
@@ -67,7 +67,7 @@ class StopTime(object):
         self.rank=stop_sequence
         self.departure=deptime
         self.arrival=arrtime
-        self.trip.add_stoptime(self)
+        #self.trip.add_stoptime(self)
     
     def __str__(self):
         return f"{id(self)}:{self.trip}, {id(self)}:{self.stop}, {id(self)}:{self.rank}"
