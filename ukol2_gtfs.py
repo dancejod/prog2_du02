@@ -61,7 +61,8 @@ class Trip(object):
         self.stoptime_list.append(stoptime) """
 
 class StopTime(object):
-    def __init__(self, trip, stop, stop_sequence, deptime, arrtime):
+    def __init__(self, stop_time_index, trip, stop, stop_sequence, deptime, arrtime):
+        self.stop_time_index=stop_time_index
         self.trip=trip
         self.stop=stop
         self.rank=stop_sequence
@@ -73,30 +74,36 @@ class StopTime(object):
         return f"{id(self)}:{self.trip}, {id(self)}:{self.stop}, {id(self)}:{self.rank}"
 
 class StopSegment(object):
-    def __init__(self, trip, from_stop, to_stop):
-        self.trip = trip
-        self.from_stop=from_stop
-        self.to_stop=to_stop
-        self.trips_list=[] # z toho pak ziskame count
+
+    def __init__(self):
+        self.from_stop = None
+        self.to_stop = None
+        self.trips = []  # z toho pak ziskame count
+
+    def create_segment(self, data_stop_times, data_trips, data_stops, data_routes):
+        segment_list=[]
+        for i in range(100): #zatim random range, abych si nazabila pc lmao
+            current_stop_time = StopTime(i, trip, stop, stop_sequence, deptime, arrtime) #sem se ulozi stoptime podle indexu v our_data_stop_times
+            if current_stop_time.stop_sequence == '1':
+                # kdyz je zastvaka prvni na tripu, current priradime vychozi zastavce a cilova je none
+                self.from_stop = current_stop_time.stop
+                self.to_stop = None
+            else:
+                #kdyz to neni prvni zastavka...
+                if self.to_stop == None:
+                    # kdyz je cilova none, priradime ji current, to by se melo asi stat jen u rank = 2, jinak se z puvodni cilovy stane vychozi a cilova je current
+                    self.to_stop = current_stop_time.stop
+                else:
+                    self.from_stop = self.to_stop
+                    self.to_stop = current_stop_time.stop
         
     def add_trip_to_list(self, trip):
         self.trips_list.append(trip)
 
+    def __str__(self):
+        return f"z: {self.from_stop.name} do: {self.to_stop.name}"
 
-first_stop = Stop(1, 'kakatka')
-second_stop = Stop(2, 'dankajesuper')
+StopSegment().create_segment(our_data_stop_times,our_data_trips,our_data_stops,our_data_routes)
 
-first_route = Route({3:{
-    'kratke_jmeno':"d",
-    'dlouhe_jmeno':"ddddd"
-}},3)
-
-first_trip = Trip(100, first_route)
-
-stopkaa = StopTime(first_trip, first_stop, 1,'0700', '1400')
-
-segment = StopSegment(first_trip,first_stop,second_stop)
-
-print("kako")
 #print(StopTime().get_data(our_data_stop_times,our_data_trips,our_data_stops,our_data_routes))
 #print(StopTime().get_data(our_data_stop_times,our_data_trips,our_data_stops,our_data_routes))
