@@ -44,15 +44,15 @@ class StopTime(object):
 
 class StopSegment(object):
 
-    def __init__(self):
-        self.from_stop = None
-        self.to_stop = None
+    def __init__(self, from_stop, to_stop):
+        self.from_stop = from_stop
+        self.to_stop = to_stop
         self.trips = []  # z toho pak ziskame count
 
-    def create_segment(self, data_stop_times, data_trips, data_stops, data_routes):
-        segment_list=[]
-        for i in range(100): #zatim random range, abych si nazabila pc lmao
-            current_stop_time = StopTime(i, trip, stop, stop_sequence, deptime, arrtime) #sem se ulozi stoptime podle indexu v our_data_stop_times
+    def create_segment(self, data_stop_times):
+
+        for stoptime in data_stop_times: #zatim random range, abych si nazabila pc lmao
+            current_stop_time = stoptime #sem se ulozi stoptime podle indexu v our_data_stop_times
             if current_stop_time.stop_sequence == '1':
                 # kdyz je zastvaka prvni na tripu, current priradime vychozi zastavce a cilova je none
                 self.from_stop = current_stop_time.stop
