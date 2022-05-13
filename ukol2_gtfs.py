@@ -29,6 +29,9 @@ class Trip(object):
 
     """ def add_stoptime(self, stoptime):
         self.stoptime_list.append(stoptime) """
+    
+    def __str__(self):
+        return f"id tripu {self.id}, linka {self.route.short_name}"
 
 class StopTime(object):
     def __init__(self, trip, stop, stop_sequence, deptime, arrtime):
@@ -44,33 +47,50 @@ class StopTime(object):
 
 class StopSegment(object):
 
-    def __init__(self, from_stop, to_stop):
+    def __init__(self, from_stop, to_stop, trip):
         self.from_stop = from_stop
         self.to_stop = to_stop
-        self.trips = []  # z toho pak ziskame count
+        self.trips = [trip]  # z toho pak ziskame count
 
-    def create_segment(self, data_stop_times):
-
-        for stoptime in data_stop_times: #zatim random range, abych si nazabila pc lmao
-            current_stop_time = stoptime #sem se ulozi stoptime podle indexu v our_data_stop_times
+    @classmethod
+    def create_segment(cls, data_stop_times):
+        segment_dict={}
+        for stoptime in data_stop_times[:100]: #zatim random range, abych si nazabila pc lmao
+            current_stop_time = stoptime
             if current_stop_time.stop_sequence == '1':
-                # kdyz je zastvaka prvni na tripu, current priradime vychozi zastavce a cilova je none
-                self.from_stop = current_stop_time.stop
-                self.to_stop = None
+                # kdyz je zastavka prvni na tripu, current priradime vychozi zastavce a cilova je none
+                from_stop = current_stop_time.stop
+                to_stop=None
+            elif current_stop_time.stop_sequence == '2':
+                # kdyz je to 2. zastavka v tripu, cilovy je priradena current
+                to_stop = current_stop_time.stop
             else:
-                #kdyz to neni prvni zastavka...
-                if self.to_stop == None:
-                    # kdyz je cilova none, priradime ji current, to by se melo asi stat jen u stop_sequence = 2, jinak se z puvodni cilovy stane vychozi a cilova je current
-                    self.to_stop = current_stop_time.stop
+                # jinak se z cilovy stane vychozi a cilova je current
+                from_stop = to_stop
+                to_stop = current_stop_time.stop
+            if to_stop != None:
+                # kdyz cilova neni None (respektive vychozi i cilova):
+                    # vytvorime segment_key z id obou zastavek, coz je jednoznacny identifikator segmentu
+                    # accessneme trip z currentu, se kterym si pak budeme hrat
+                segment_key=(from_stop.id,to_stop.id)
+                trip=current_stop_time.trip
+                if segment_key not in segment_dict.keys():
+                    # kdyz segment_key jeste neni jako klic ve slovniku:
+                        # vytvorime objekt StopSegment, ktery vezme jako parametry ty promenny, ktery jsme prave ziskaly
+                        # tenhle novy StopSegment dame do slovniku jako value, jehoz key bude tuple s id obou zastavek (segment_key)
+                    segment=StopSegment(from_stop,to_stop,trip)
+                    segment_dict[(segment_key)]=segment
                 else:
-                    self.from_stop = self.to_stop
-                    self.to_stop = current_stop_time.stop
-        
+                    # kdyz tam segement uz je, odpovidajici StopSegment accessneme pres segment_key a do seznamu prihodime ten ziskany trip
+                    segment_dict[segment_key].trips.append(trip)
+        return segment_dict # vratime cely slovnik StopSegmentu
+
+
     def add_trip_to_list(self, trip):
-        self.trips_list.append(trip)
+        self.trips.append(trip)
 
     def __str__(self):
-        return f"z: {self.from_stop.name} do: {self.to_stop.name}"
+        return f"z: {self.from_stop.name} do: {self.to_stop.name} tripy: {self.trips}"
 
 with open('PID_GTFS/stops.txt',encoding="utf-8", newline='') as raw_stops:
     stops_reader = csv.DictReader(raw_stops)
@@ -88,7 +108,7 @@ with open('PID_GTFS/trips.txt',encoding="utf-8", newline='') as raw_trips:
     trips_reader = csv.DictReader(raw_trips)
     for row in trips_reader:
         route_pk = row['route_id']
-        trip = Trip(row['trip_id'], our_data_routes.get(route_pk))
+        trip = Trip(row['trip_id'], our_data_routes[route_pk])
         our_data_trips[trip.id] = trip # Sample: '1349_28156_211212': {'linka_id': 'L1349'},
 
 with open('PID_GTFS/stop_times.txt',encoding="utf-8", newline='') as raw_stop_times:
@@ -96,11 +116,12 @@ with open('PID_GTFS/stop_times.txt',encoding="utf-8", newline='') as raw_stop_ti
     for row in stop_times_reader:
         trip_pk = row['trip_id']
         stop_pk = row['stop_id']
-        stop_time = StopTime(our_data_trips.get(trip_pk), our_data_stops.get(stop_pk), row['stop_sequence'], row['departure_time'], row['arrival_time'])
+        stop_time = StopTime(our_data_trips[trip_pk], our_data_stops[stop_pk], row['stop_sequence'], row['departure_time'], row['arrival_time'])
         our_data_stop_times.append(stop_time)
 
+ggwp=StopSegment.create_segment(our_data_stop_times)
+uhmmm=ggwp.values()
 
+for segment in uhmmm:
+    print (segment)
 
-
-#print(StopTime().get_data(our_data_stop_times,our_data_trips,our_data_stops,our_data_routes))
-#print(StopTime().get_data(our_data_stop_times,our_data_trips,our_data_stops,our_data_routes))
