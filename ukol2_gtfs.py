@@ -47,21 +47,19 @@ class StopTime(object):
 
 class StopSegment(object):
 
-    def __init__(self, from_stop, to_stop, trip, trip_count):
+    def __init__(self, from_stop, to_stop, trip):
         self.from_stop = from_stop
         self.to_stop = to_stop
         self.trips = [trip]  # z toho pak ziskame count
-        self.trip_count = trip_count
 
     @classmethod
     def create_segment(cls, data_stop_times):
         segment_dict={}
-        for stoptime in data_stop_times[:100]: #zatim random range, abych si nazabila pc lmao
-            current_stop_time = stoptime
+        for current_stop_time in data_stop_times: #zatim random range, abych si nazabila pc lmao
             if current_stop_time.stop_sequence == '1':
                 # kdyz je zastavka prvni na tripu, current priradime vychozi zastavce a cilova je none
                 from_stop = current_stop_time.stop
-                to_stop=None
+                continue
             elif current_stop_time.stop_sequence == '2':
                 # kdyz je to 2. zastavka v tripu, cilovy je priradena current
                 to_stop = current_stop_time.stop
@@ -69,31 +67,34 @@ class StopSegment(object):
                 # jinak se z cilovy stane vychozi a cilova je current
                 from_stop = to_stop
                 to_stop = current_stop_time.stop
-            if to_stop != None:
                 # kdyz cilova neni None (respektive vychozi i cilova):
                     # vytvorime segment_key z id obou zastavek, coz je jednoznacny identifikator segmentu
                     # accessneme trip z currentu, se kterym si pak budeme hrat
-                segment_key=(from_stop.id,to_stop.id)
-                trip=current_stop_time.trip
-                if segment_key not in segment_dict.keys():
+            segment_key=(from_stop.id,to_stop.id)
+            trip=current_stop_time.trip
+            if segment_key not in segment_dict.keys():
                     # kdyz segment_key jeste neni jako klic ve slovniku:
                         # vytvorime objekt StopSegment, ktery vezme jako parametry ty promenny, ktery jsme prave ziskaly
                         # tenhle novy StopSegment dame do slovniku jako value, jehoz key bude tuple s id obou zastavek (segment_key)
-                    trip_count = 1
-                    segment=StopSegment(from_stop,to_stop,trip, trip_count)
-                    segment_dict[(segment_key)]=segment
+                segment=StopSegment(from_stop,to_stop,trip)
+                segment_dict[(segment_key)]=segment
 
-                else:
+            else:
                     # kdyz tam segement uz je, odpovidajici StopSegment accessneme pres segment_key a do seznamu prihodime ten ziskany trip
-                    segment_dict[segment_key].trips.append(trip) # BAD ELISKA TO JE ZAKAZANE JAIL
-                    segment_dict[segment_key].trip_count = segment_dict[segment_key].trip_count+1
-
-
+                segment_dict[segment_key].trips.append(trip) # BAD ELISKA TO JE ZAKAZANE JAIL
 
         return segment_dict # vratime cely slovnik StopSegmentu
+    
+    @classmethod
+    def get_trip_count_from_segments(cls, segment_dict):
+        sorted_segment_dict = sorted(segment_dict.values(), key = lambda x: len(x.trips), reverse=True)
+        #print(sorted_segment_dict)
+        for item in sorted_segment_dict[:5]:
+            print(f"Z: {item.from_stop.name} Do: {item.to_stop.name} Pocet vyjezdu: {len(item.trips)}")
+        
 
     def __str__(self):
-        return f"z: {self.from_stop.name} do: {self.to_stop.name} tripy: {self.trips} count: {self.trip_count}"
+        return f"z: {self.from_stop.name} do: {self.to_stop.name} tripy: {self.trips}"
 
 with open('PID_GTFS/stops.txt',encoding="utf-8", newline='') as raw_stops:
     stops_reader = csv.DictReader(raw_stops)
@@ -123,8 +124,5 @@ with open('PID_GTFS/stop_times.txt',encoding="utf-8", newline='') as raw_stop_ti
         our_data_stop_times.append(stop_time)
 
 ggwp=StopSegment.create_segment(our_data_stop_times)
+yes = StopSegment.get_trip_count_from_segments(ggwp)
 print(ggwp)
-
-for segment in uhmmm:
-    print (segment)
-
