@@ -47,10 +47,11 @@ class StopTime(object):
 
 class StopSegment(object):
 
-    def __init__(self, from_stop, to_stop, trip):
+    def __init__(self, from_stop, to_stop, trip, trip_count):
         self.from_stop = from_stop
         self.to_stop = to_stop
         self.trips = [trip]  # z toho pak ziskame count
+        self.trip_count = trip_count
 
     @classmethod
     def create_segment(cls, data_stop_times):
@@ -78,19 +79,21 @@ class StopSegment(object):
                     # kdyz segment_key jeste neni jako klic ve slovniku:
                         # vytvorime objekt StopSegment, ktery vezme jako parametry ty promenny, ktery jsme prave ziskaly
                         # tenhle novy StopSegment dame do slovniku jako value, jehoz key bude tuple s id obou zastavek (segment_key)
-                    segment=StopSegment(from_stop,to_stop,trip)
+                    trip_count = 1
+                    segment=StopSegment(from_stop,to_stop,trip, trip_count)
                     segment_dict[(segment_key)]=segment
+
                 else:
                     # kdyz tam segement uz je, odpovidajici StopSegment accessneme pres segment_key a do seznamu prihodime ten ziskany trip
-                    segment_dict[segment_key].trips.append(trip)
+                    segment_dict[segment_key].trips.append(trip) # BAD ELISKA TO JE ZAKAZANE JAIL
+                    segment_dict[segment_key].trip_count = segment_dict[segment_key].trip_count+1
+
+
+
         return segment_dict # vratime cely slovnik StopSegmentu
 
-
-    def add_trip_to_list(self, trip):
-        self.trips.append(trip)
-
     def __str__(self):
-        return f"z: {self.from_stop.name} do: {self.to_stop.name} tripy: {self.trips}"
+        return f"z: {self.from_stop.name} do: {self.to_stop.name} tripy: {self.trips} count: {self.trip_count}"
 
 with open('PID_GTFS/stops.txt',encoding="utf-8", newline='') as raw_stops:
     stops_reader = csv.DictReader(raw_stops)
@@ -120,7 +123,7 @@ with open('PID_GTFS/stop_times.txt',encoding="utf-8", newline='') as raw_stop_ti
         our_data_stop_times.append(stop_time)
 
 ggwp=StopSegment.create_segment(our_data_stop_times)
-uhmmm=ggwp.values()
+print(ggwp)
 
 for segment in uhmmm:
     print (segment)
