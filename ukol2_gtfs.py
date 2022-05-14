@@ -22,9 +22,10 @@ class Route(object):
 
 
 class Trip(object):
-    def __init__ (self, trip_id, route):
+    def __init__ (self, trip_id, route, service_id):
         self.id=trip_id
         self.route=route
+        self.service_id=service_id
         #self.stoptime_list = []
 
     """ def add_stoptime(self, stoptime):
@@ -94,7 +95,7 @@ class StopSegment(object):
         #print(sorted_segment_dict)
         i = 1
         for item in sorted_segment_dict[:5]:
-            print(f"{i}.  Z: {item.from_stop.name} Do: {item.to_stop.name} Pocet vyjezdu: {len(item.trips)} linky:{', '.join(item.routes)}")
+            print(f"{i}.  Z: {item.from_stop.name} Do: {item.to_stop.name} Pocet vyjezdu: {len(item.trips)} linky: {', '.join(item.routes)}")
             i+=1
         
 
@@ -117,7 +118,7 @@ with open('PID_GTFS/trips.txt',encoding="utf-8", newline='') as raw_trips:
     trips_reader = csv.DictReader(raw_trips)
     for row in trips_reader:
         route_pk = row['route_id']
-        trip = Trip(row['trip_id'], our_data_routes[route_pk])
+        trip = Trip(row['trip_id'], our_data_routes[route_pk], row['service_id'])
         our_data_trips[trip.id] = trip # Sample: '1349_28156_211212': {'linka_id': 'L1349'},
 
 with open('PID_GTFS/stop_times.txt',encoding="utf-8", newline='') as raw_stop_times:
