@@ -89,12 +89,14 @@ class StopSegment(object):
     def get_trip_count_from_segments(cls, segment_dict):
         sorted_segment_dict = sorted(segment_dict.values(), key = lambda x: len(x.trips), reverse=True)
         #print(sorted_segment_dict)
+        i = 1
         for item in sorted_segment_dict[:5]:
-            print(f"Z: {item.from_stop.name} Do: {item.to_stop.name} Pocet vyjezdu: {len(item.trips)}")
+            print(f"{i}.  Z: {item.from_stop.name} Do: {item.to_stop.name} Pocet vyjezdu: {len(item.trips)}")
+            i+=1
         
 
-    def __str__(self):
-        return f"z: {self.from_stop.name} do: {self.to_stop.name} tripy: {self.trips}"
+    """ def __str__(self):
+        return f"z: {self.from_stop.name} do: {self.to_stop.name} tripy: {self.trips}" """
 
 with open('PID_GTFS/stops.txt',encoding="utf-8", newline='') as raw_stops:
     stops_reader = csv.DictReader(raw_stops)
@@ -125,4 +127,4 @@ with open('PID_GTFS/stop_times.txt',encoding="utf-8", newline='') as raw_stop_ti
 
 ggwp=StopSegment.create_segment(our_data_stop_times)
 yes = StopSegment.get_trip_count_from_segments(ggwp)
-print(ggwp)
+#print(ggwp)
