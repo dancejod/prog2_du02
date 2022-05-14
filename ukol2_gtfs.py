@@ -18,7 +18,7 @@ class Route(object):
         #self.routes[route_id] = {'id:': self.id,'short_name:': self.short_name, 'long_name:': self.long_name}
 
     def __str__(self):
-        return f"{id(self)}:{self.id}, {id(self)}:{self.short_name}, {id(self)}:{self.long_name}"
+        return f"oznaceni linky: {self.short_name}, usek: {self.long_name}"
 
 
 class Trip(object):
