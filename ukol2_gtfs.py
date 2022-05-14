@@ -43,15 +43,15 @@ class StopTime(object):
         #self.trip.add_stoptime(self)
     
     def __str__(self):
-        return f"{id(self)}:{self.trip}, {id(self)}:{self.stop}, {id(self)}:{self.stop_sequence}"
+        return f"zastavka: {self.stop.name}"
 
 class StopSegment(object):
 
-    def __init__(self, from_stop, to_stop, trip):
+    def __init__(self, from_stop, to_stop, trip,route):
         self.from_stop = from_stop
         self.to_stop = to_stop
         self.trips = [trip]  # z toho pak ziskame count
-
+        self.routes = [route]
     @classmethod
     def create_segment(cls, data_stop_times):
         segment_dict={}
@@ -72,16 +72,19 @@ class StopSegment(object):
                     # accessneme trip z currentu, se kterym si pak budeme hrat
             segment_key=(from_stop.id,to_stop.id)
             trip=current_stop_time.trip
+            route=trip.route.short_name
             if segment_key not in segment_dict.keys():
                     # kdyz segment_key jeste neni jako klic ve slovniku:
                         # vytvorime objekt StopSegment, ktery vezme jako parametry ty promenny, ktery jsme prave ziskaly
                         # tenhle novy StopSegment dame do slovniku jako value, jehoz key bude tuple s id obou zastavek (segment_key)
-                segment=StopSegment(from_stop,to_stop,trip)
+                segment=StopSegment(from_stop,to_stop,trip,route)
                 segment_dict[(segment_key)]=segment
 
             else:
                     # kdyz tam segement uz je, odpovidajici StopSegment accessneme pres segment_key a do seznamu prihodime ten ziskany trip
-                segment_dict[segment_key].trips.append(trip) # BAD ELISKA TO JE ZAKAZANE JAIL
+                segment_dict[segment_key].trips.append(trip)
+                if route not in segment_dict[segment_key].routes:
+                    segment_dict[segment_key].routes.append(route) # BAD ELISKA TO JE ZAKAZANE JAIL
 
         return segment_dict # vratime cely slovnik StopSegmentu
     
@@ -91,7 +94,7 @@ class StopSegment(object):
         #print(sorted_segment_dict)
         i = 1
         for item in sorted_segment_dict[:5]:
-            print(f"{i}.  Z: {item.from_stop.name} Do: {item.to_stop.name} Pocet vyjezdu: {len(item.trips)}")
+            print(f"{i}.  Z: {item.from_stop.name} Do: {item.to_stop.name} Pocet vyjezdu: {len(item.trips)} linky:{', '.join(item.routes)}")
             i+=1
         
 
