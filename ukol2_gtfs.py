@@ -1,12 +1,15 @@
 import csv
 import sys
 from datetime import datetime,date,timedelta
+import datagetter
 
 our_data_stops={}
 our_data_stop_times=[]
 our_data_trips={}
 our_data_routes={}
 our_data_services={}
+
+datagetter.get_data()
 
 def convert_user_date(date_user):
     date_time_obj = datetime.strptime(date_user,'%d.%m.%Y')
@@ -164,26 +167,26 @@ class StopSegment(object):
     """ def __str__(self):
         return f"z: {self.from_stop.name} do: {self.to_stop.name} tripy: {self.trips}" """
 
-with open('PID_GTFS/stops.txt',encoding="utf-8", newline='') as raw_stops:
+with open('gtfs/stops.txt',encoding="utf-8", newline='') as raw_stops:
     stops_reader = csv.DictReader(raw_stops)
     for row in stops_reader:
         stop = Stop(row['stop_id'], row['stop_name'])
         our_data_stops[stop.id]= stop # !! Niektore stops nemaju jmeno, ale to asi neva
                                                     # Sample: 'U1072S1E1081': {'jmeno': 'E8'}
-with open('PID_GTFS/routes.txt',encoding="utf-8", newline='') as raw_routes:
+with open('gtfs/routes.txt',encoding="utf-8", newline='') as raw_routes:
     routes_reader = csv.DictReader(raw_routes)
     for row in routes_reader:
         route = Route(row['route_id'], row['route_short_name'], row['route_long_name'])
         our_data_routes[route.id] = route
         
-with open('PID_GTFS/calendar.txt',encoding="utf-8", newline='') as raw_calendar:
+with open('gtfs/calendar.txt',encoding="utf-8", newline='') as raw_calendar:
     # klasicky nacitame soubor
     calendar_reader = csv.DictReader(raw_calendar)
     for row in calendar_reader: # row odpovida jednomu servicu
         service=Service.get_service(row) # ziskame service pomoci ty fancy metody
         our_data_services[service.id]=service # service hodime do slovniku, kde je klicem service.id a value je objekt tridy service
 
-with open('PID_GTFS/trips.txt',encoding="utf-8", newline='') as raw_trips:
+with open('gtfs/trips.txt',encoding="utf-8", newline='') as raw_trips:
     trips_reader = csv.DictReader(raw_trips)
     for row in trips_reader:
         route_pk = row['route_id']
@@ -191,7 +194,7 @@ with open('PID_GTFS/trips.txt',encoding="utf-8", newline='') as raw_trips:
         trip = Trip(row['trip_id'], our_data_routes[route_pk], our_data_services[service_pk]) # pridano nappjeni na service pres pk
         our_data_trips[trip.id] = trip # Sample: '1349_28156_211212': {'linka_id': 'L1349'},
 
-with open('PID_GTFS/stop_times.txt',encoding="utf-8", newline='') as raw_stop_times:
+with open('gtfs/stop_times.txt',encoding="utf-8", newline='') as raw_stop_times:
     stop_times_reader = csv.DictReader(raw_stop_times)
     for row in stop_times_reader:
         trip_pk = row['trip_id']
