@@ -1,5 +1,6 @@
 import requests, zipfile
 from io import BytesIO
+import sys
 
 def get_data():
     user_input = str(input("Prajete si stiahnut nove data? Y/N "))
@@ -11,5 +12,7 @@ def get_data():
         zip.extractall("gtfs")
         print("Data uspesne extrahovane.")
     
-    if user_input == 'N':
+    elif user_input == 'N':
         pass
+    else:
+        sys.exit("wrong answer")
