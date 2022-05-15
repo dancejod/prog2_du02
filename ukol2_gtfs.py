@@ -8,19 +8,28 @@ our_data_trips={}
 our_data_routes={}
 our_data_services={}
 
-def convert(date_int): # konvertuje treba 20220429 (29. aprila 2022) na objekt typu date, urcite existuje vic efficient zpusob za pouziti datetime
-    year=date_int//10000
-    month=(date_int-year*10000)//100
-    day=(date_int-year*10000-month*100)
-    datum=date(year,month,day)
-    return datum
+def convert_user_date(date_user):
+    date_time_obj = datetime.strptime(date_user,'%d.%m.%Y')
+    year=date_time_obj.year
+    month=date_time_obj.month
+    day=date_time_obj.day
+    user_date_obj=date(year,month,day)
+    return user_date_obj
+
+
+def convert_int_date(date_int): # konvertuje treba 20220429 (29. aprila 2022) na objekt typu date
+    date_time_obj = datetime.strptime(date_int,'%Y%m%d')
+    year=date_time_obj.year
+    month=date_time_obj.month
+    day=date_time_obj.day
+    data_date_obj=date(year,month,day)
+    return data_date_obj
 
 def daterange(start, end): # vezme obejkty typu date a vrati list objektu typu date v tom zadanym intervalu, ukrdeno z internetu
     dates=[]
     for n in range(int ((end - start).days)+1):
         dates.append(start + timedelta(n))
     return dates
-
 
 class Stop(object):
     def __init__ (self, stop_id, stop_name):
@@ -46,10 +55,10 @@ class Service(object): # v tom calendar.txt je na kazdym radku jeden service a j
     @classmethod # tady zacina ta fun part
     def get_service(cls,service_row): # pak bude brat primo z calendar readeru
         service_days = [] # sem se budou ukladat dny, kdy service funguje/jezdi
-        a = int(service_row['start_date'])
-        b = int(service_row['end_date']) # just in case z toho delam integer, obcas to bullshitovalo
-        start = convert(a)
-        end = convert(b) # convert na objekt date
+        a = service_row['start_date']
+        b = service_row['end_date'] # just in case z toho delam integer, obcas to bullshitovalo
+        start = convert_int_date(a)
+        end = convert_int_date(b) # convert na objekt date
         service_dates=daterange(start,end) # list datumu ziskany z toho intervalu v puvodnim souboru
         week_service_list=[service_row['monday'],service_row['tuesday'],service_row['wednesday'],service_row['thursday'],service_row['friday'],service_row['saturday'],service_row['sunday']]
         # list ve kterym je ulozeno, jaky dny v tydnu funguje service
@@ -100,13 +109,13 @@ class StopSegment(object):
         self.trips = [trip]  # z toho pak ziskame count
         self.routes = [route]
     @classmethod
-    def get_segment_dict(cls, data_stop_times): # tady pak bude parametrem i to datum..
-        datum=date(2022,3,27) # ..ale for now to zatim jen zkousim takhle
+    def get_segment_dict(cls, data_stop_times,date_string): # tady pak bude parametrem i to datum..
+        user_date_ex=convert_user_date(date_string)
 
         segment_dict={}
         
         for current_stop_time in data_stop_times: #zatim random range, abych si nazabila pc lmao
-            if datum in current_stop_time.trip.service.service_days:
+            if user_date_ex in current_stop_time.trip.service.service_days:
                 # accessneme service pres trip ulozeny v stoptimu a checkneme, jestli je v service_days ulozeny to datum, ktery jsme zadali jako parametr
                 # a pokud tam je, tak probehne celej ten shitfest tvorby StopSegmentu
                 if current_stop_time.stop_sequence == '1':
@@ -190,7 +199,7 @@ with open('PID_GTFS/stop_times.txt',encoding="utf-8", newline='') as raw_stop_ti
         stop_time = StopTime(our_data_trips[trip_pk], our_data_stops[stop_pk], row['stop_sequence'], row['departure_time'], row['arrival_time'])
         our_data_stop_times.append(stop_time)
 
-
-x=StopSegment.get_segment_dict(our_data_stop_times)
+datum=str(input("zadejte datum ve formatu dd.mm.rrrr "))
+x=StopSegment.get_segment_dict(our_data_stop_times, datum)
 StopSegment.get_trip_count_from_segments(x)
 
