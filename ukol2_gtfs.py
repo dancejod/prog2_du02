@@ -1,6 +1,6 @@
 import csv
 import sys
-from datetime import datetime,date,timedelta
+from datetime import datetime, timedelta
 
 our_data_stops={}
 our_data_stop_times=[]
@@ -23,9 +23,6 @@ except PermissionError:
 
 except IOError:
     sys.exit("Subor datagetter.py neexistuje, alebo nie je v spravnom adresari.")
-
-except:
-    sys.exit("Nieco sa pokazilo, program sa teraz ukonci.")
 
 def convert_user_date(date_user):
     # konvertuje datum zadaný uživatelem (string) na objekt třídy date
@@ -151,49 +148,93 @@ class StopSegment(object):
             print(f"{i}. nejfrekventovanější úsek je mezi zastávkami {item.from_stop.name} a {item.to_stop.name}. Projede jím {len(item.trips)} spojů linek {', '.join(sorted(item.routes))}.")
             i+=1
         
+try:
+    stops = "stops.txt"
+    with open("gtfs/"+stops, encoding="utf-8", newline='') as raw_stops:
+        # otevření souboru stops.txt a uložení potřebných dat do slovníku
+        stops_reader = csv.DictReader(raw_stops)
+        for row in stops_reader:
+            stop = Stop(row['stop_id'], row['stop_name'])
+            our_data_stops[stop.id]= stop
 
-with open('gtfs/stops.txt',encoding="utf-8", newline='') as raw_stops:
-    # otevření souboru stops.txt a uložení potřebných dat do slovníku
-    stops_reader = csv.DictReader(raw_stops)
-    for row in stops_reader:
-        stop = Stop(row['stop_id'], row['stop_name'])
-        our_data_stops[stop.id]= stop
+except FileNotFoundError:
+    sys.exit(f"Subor {stops} nebol najdeny. Uistite sa, ze je umiestneny v tomto adresari v priecinku gtfs/.")
 
-with open('gtfs/routes.txt',encoding="utf-8", newline='') as raw_routes:
-    # otevření souboru routes.txt a uložení potřebných dat do slovníku
-    routes_reader = csv.DictReader(raw_routes)
-    for row in routes_reader:
-        route = Route(row['route_id'], row['route_short_name'])
-        our_data_routes[route.id] = route
-        
-with open('gtfs/calendar.txt',encoding="utf-8", newline='') as raw_calendar:
-    # otevření souboru calendar.txt a uložení potřebných dat do slovníku za použití námi implementované metody
-    calendar_reader = csv.DictReader(raw_calendar)
-    for row in calendar_reader:
-        service=Service.get_service(row)
-        our_data_services[service.id]=service
+except PermissionError:
+    sys.exit(f"K suboru {stops} nemate pozadovane prava.")
 
-with open('gtfs/trips.txt',encoding="utf-8", newline='') as raw_trips:
-    # otevření souboru trips.txt a uložení potřebných dat do slovníku
-    trips_reader = csv.DictReader(raw_trips)
-    for row in trips_reader:
-        route_pk = row['route_id']
-        service_pk = row['service_id']
-        trip = Trip(row['trip_id'], our_data_routes[route_pk], our_data_services[service_pk])
-        our_data_trips[trip.id] = trip
+try:
+    routes = 'routes.txt'
+    with open("gtfs/"+routes, encoding="utf-8", newline='') as raw_routes:
+        # otevření souboru routes.txt a uložení potřebných dat do slovníku
+        routes_reader = csv.DictReader(raw_routes)
+        for row in routes_reader:
+            route = Route(row['route_id'], row['route_short_name'])
+            our_data_routes[route.id] = route
 
-with open('gtfs/stop_times.txt',encoding="utf-8", newline='') as raw_stop_times:
-    # otevření souboru stop_times.txt a uložení potřebných dat do seznamu
-    stop_times_reader = csv.DictReader(raw_stop_times)
-    for row in stop_times_reader:
-        trip_pk = row['trip_id']
-        stop_pk = row['stop_id']
-        stop_time = StopTime(our_data_trips[trip_pk], our_data_stops[stop_pk], row['stop_sequence'])
-        our_data_stop_times.append(stop_time)
+except FileNotFoundError:
+    sys.exit(f"Subor {routes} nebol najdeny. Uistite sa, ze je umiestneny v tomto adresari v priecinku gtfs/.")
+
+except PermissionError:
+    sys.exit(f"K suboru {routes} nemate pozadovane prava.")
+
+try:
+    calendar = 'calendar.txt'        
+    with open("gtfs/"+calendar, encoding="utf-8", newline='') as raw_calendar:
+        # otevření souboru calendar.txt a uložení potřebných dat do slovníku za použití námi implementované metody
+        calendar_reader = csv.DictReader(raw_calendar)
+        for row in calendar_reader:
+            service=Service.get_service(row)
+            our_data_services[service.id]=service
+
+except FileNotFoundError:
+    sys.exit(f"Subor {calendar} nebol najdeny. Uistite sa, ze je umiestneny v tomto adresari v priecinku gtfs/.")
+
+except PermissionError:
+    sys.exit(f"K suboru {calendar} nemate pozadovane prava.")
+
+try:
+    trips = 'trips.txt'
+    with open("gtfs/"+trips, encoding="utf-8", newline='') as raw_trips:
+        # otevření souboru trips.txt a uložení potřebných dat do slovníku
+        trips_reader = csv.DictReader(raw_trips)
+        for row in trips_reader:
+            route_pk = row['route_id']
+            service_pk = row['service_id']
+            trip = Trip(row['trip_id'], our_data_routes[route_pk], our_data_services[service_pk])
+            our_data_trips[trip.id] = trip
+
+except FileNotFoundError:
+    sys.exit(f"Subor {trips} nebol najdeny. Uistite sa, ze je umiestneny v tomto adresari v priecinku gtfs/.")
+
+except PermissionError:
+    sys.exit(f"K suboru {trips} nemate pozadovane prava.")
+
+try:
+    stop_times = 'stop_times.txt'
+    with open("gtfs/"+stop_times, encoding="utf-8", newline='') as raw_stop_times:
+        # otevření souboru stop_times.txt a uložení potřebných dat do seznamu
+        stop_times_reader = csv.DictReader(raw_stop_times)
+        for row in stop_times_reader:
+            trip_pk = row['trip_id']
+            stop_pk = row['stop_id']
+            stop_time = StopTime(our_data_trips[trip_pk], our_data_stops[stop_pk], row['stop_sequence'])
+            our_data_stop_times.append(stop_time)
+
+except FileNotFoundError:
+    sys.exit(f"Subor {stop_times} nebol najdeny. Uistite sa, ze je umiestneny v tomto adresari v priecinku gtfs/.")
+
+except PermissionError:
+    sys.exit(f"K suboru {stop_times} nemate pozadovane prava.")
 
 #datum=str(input("zadejte datum ve formátu dd.mm.rrrr "))
-x=StopSegment.get_segment_dict(our_data_stop_times, sys.argv[1])
-StopSegment.print_trip_count_from_segments(x)
+try:    
+    user_date = StopSegment.get_segment_dict(our_data_stop_times, sys.argv[1])
 
+except ValueError:
+    sys.exit("Zadali ste datum v nespravnom formate. Uistite sa, ze ho zadavate vo formate: DD.MM.RRRR")
 
+except IndexError:
+    sys.exit("Nezadali ste datum, pre ktory chcete vygenerovat najfrekventovanejsie useky.")
 
+StopSegment.print_trip_count_from_segments(user_date)
