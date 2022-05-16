@@ -107,10 +107,6 @@ class Service(object):
         Atributy:
             service_id (str): ID sluzby, ktera sprovoznuje spoje.
             service_days (set): Set objektu tridy date, kdy dana sluzba jezdi.
-    
-        Metody:
-            get_service (class metoda): Vrati objekt tridy Service, kde je parametrem
-            radek z csv.DictReaderu.
     """
     def __init__(self,service_id,service_days):
         self.id=service_id
@@ -174,20 +170,6 @@ class StopSegment(object):
             to_stop (objekt): Objekt tridy Stop.
             trip (list): Seznam spoju prochazejicich mezi from_stop a to_stop.
             route (objekt): Set linek prochazejicich mezi from_stop a to_stop.
-        
-        Metody:
-            get_segment_dict(class metoda): Vrati slovnik, kde klicem je dvojice ID za sebou jdoucich zastavek
-                a hodnotou objekt tridy StopSegment.
-
-                Parametry:
-                    data_stop_times (list): Seznam objektu tridy StopTime.
-                    date_string (str): Datum ve formatu DD.MM.RRRR zadane uzivatelem.
-
-            print_trip_count_from_segments(class metoda): Seřadí slovník segmentů podle délky seznamu tripů jím projíždějících 
-                a vytiskne 5. nejfrekventovanějších.
-
-                Parametry:
-                    segment_dict (dict): Slovnik segmentu ziskanych v metode get_segmet_dict.
     """
     def __init__(self, from_stop, to_stop, trip, route):
         self.from_stop = from_stop
@@ -197,8 +179,14 @@ class StopSegment(object):
         
     @classmethod
     def get_segment_dict(cls, data_stop_times,date_string):
-        """Vrati slovnik, kde klicem je dvojice ID za sebou jdoucich zastavek
-        a hodnotou objekt tridy StopSegment."""
+        """
+        Class metoda vrati slovnik, kde klicem je dvojice ID za sebou jdoucich zastavek
+        a hodnotou objekt tridy StopSegment.
+
+            Parametry:
+                    data_stop_times (list): Seznam objektu tridy StopTime.
+                    date_string (str): Datum ve formatu DD.MM.RRRR zadane uzivatelem.
+        """
         # Konverze date_string na objekt tridy date
         user_date=convert_user_date(date_string)
         segment_dict={}
@@ -244,7 +232,14 @@ class StopSegment(object):
     
     @classmethod
     def print_trip_count_from_segments(cls, segment_dict):
-        # Seřadení slovník segmentů podle délky seznamu tripů jím projíždějících a vytiskne 5. nejfrekventovanějších
+        """
+        Class metoda seřadí slovník segmentů podle délky seznamu tripů jím projíždějících 
+        a vytiskne 5. nejfrekventovanějších.
+
+            Parametry:
+                segment_dict (dict): Slovnik segmentu ziskanych v metode get_segmet_dict.
+        """
+        # Seřadení slovník segmentů podle délky seznamu tripů jím projíždějících
         sorted_segment_dict = sorted(segment_dict.values(), key = lambda x: len(x.trips), reverse=True)
         i = 1
         for item in sorted_segment_dict[:5]:
