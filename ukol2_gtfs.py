@@ -14,19 +14,13 @@ datagetter.get_data()
 def convert_user_date(date_user):
     # konvertuje datum zadaný uživatelem (string) na objekt třídy date
     date_time_obj = datetime.strptime(date_user,'%d.%m.%Y')
-    year=date_time_obj.year
-    month=date_time_obj.month
-    day=date_time_obj.day
-    user_date_obj=date(year,month,day)
+    user_date_obj=datetime.date(date_time_obj)
     return user_date_obj
 
 def convert_int_date(date_int):
     # konvertuje datum ze souboru calendar.txt na objekt třídy date
     date_time_obj = datetime.strptime(date_int,'%Y%m%d')
-    year=date_time_obj.year
-    month=date_time_obj.month
-    day=date_time_obj.day
-    data_date_obj=date(year,month,day)
+    data_date_obj=datetime.date(date_time_obj)
     return data_date_obj
 
 def daterange(start, end):
@@ -93,6 +87,7 @@ class StopSegment(object):
         self.to_stop = to_stop
         self.trips = [trip]
         self.routes = [route]
+        
     @classmethod
     def get_segment_dict(cls, data_stop_times,date_string):
         # vrátí slovník, kde klíčem je dvojice from_stop.id a to_stop.id a hodnotou objekt třídy StopSegment
@@ -100,8 +95,11 @@ class StopSegment(object):
         user_date=convert_user_date(date_string) # konverze date_string na objekt třídy date
         segment_dict={}
         for current_stop_time in data_stop_times:
-            if user_date in current_stop_time.trip.service.service_days:
-                # když je datum zadané uživatelem v seznamu datumů, kdy funguje service odpovídající tripu odpovídající current_stop_time
+            if user_date not in current_stop_time.trip.service.service_days:
+                # když je datum zadané uživatelem není seznamu datumů, kdy funguje service odpovídající tripu odpovídající current_stop_time
+                continue # pokračujeme s další iterací
+            else:
+                # jinak se cyklus proběhne
                 if current_stop_time.stop_sequence == '1':
                     # když je zastávka první na tripu, přiřadíme zastávku z current_stop_time výchozí zastávce
                     from_stop = current_stop_time.stop
@@ -120,7 +118,6 @@ class StopSegment(object):
                 # když segment_key jestě není jako klíč ve slovníku segmentů:
                     segment=StopSegment(from_stop,to_stop,trip,route) # vytvoříme objekt třídy StopSegment, který vezme jako parametry proměnné vytvořené během této iterace
                     segment_dict[(segment_key)]=segment # objekt třídy StopSegment uložíme jako hodnotu do slovníku
-
                 else:
                 # když ve slovníku už segment_key je:
                     segment_dict[segment_key].trips.append(trip) # přidáme odpovídající trip do seznamů tripů odpovídajícího segmentu
@@ -136,7 +133,7 @@ class StopSegment(object):
         sorted_segment_dict = sorted(segment_dict.values(), key = lambda x: len(x.trips), reverse=True)
         i = 1
         for item in sorted_segment_dict[:5]:
-            print(f"{i}. nejfrekventovanější úsek je mezi zastávkami {item.from_stop.name} a {item.to_stop.name}. Projede jím {len(item.trips)} spojů linek {', '.join(item.routes)}.")
+            print(f"{i}. nejfrekventovanější úsek je mezi zastávkami {item.from_stop.name} a {item.to_stop.name}. Projede jím {len(item.trips)} spojů linek {', '.join(sorted(item.routes))}.")
             i+=1
         
 
@@ -179,7 +176,9 @@ with open('gtfs/stop_times.txt',encoding="utf-8", newline='') as raw_stop_times:
         stop_time = StopTime(our_data_trips[trip_pk], our_data_stops[stop_pk], row['stop_sequence'])
         our_data_stop_times.append(stop_time)
 
-datum=str(input("zadejte datum ve formátu dd.mm.rrrr "))
-x=StopSegment.get_segment_dict(our_data_stop_times, datum)
+#datum=str(input("zadejte datum ve formátu dd.mm.rrrr "))
+x=StopSegment.get_segment_dict(our_data_stop_times, sys.argv[1])
 StopSegment.print_trip_count_from_segments(x)
+
+
 
