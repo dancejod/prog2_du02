@@ -44,19 +44,25 @@ def daterange(start, end):
     return dates
 
 class Stop(object):
-    # třída objektů Stop s atributy id(str) a stop_name(str)
+    """
+    třída objektů Stop s atributy id(str) a stop_name(str)
+    """
     def __init__ (self, stop_id, stop_name):
         self.id=stop_id
         self.name=stop_name
 
 class Route(object):
-    # třída objektů Route s atributy id(str) a route_name(str)
+    """
+    třída objektů Route s atributy id(str) a route_name(str)
+    """
     def __init__(self, route_id, route_name):
         self.id = route_id
-        self.short_name = route_name
+        self.name = route_name
 
 class Service(object):
-    # třída objektů Service s atributy id(str) a service_days(list) s položkami třídy date, kdy service funguje
+    """
+    třída objektů Service s atributy id(str) a service_days(set) s položkami třídy date, kdy service funguje
+    """
     def __init__(self,service_id,service_days):
         self.id=service_id
         self.service_days=service_days # list objektu tridy date, kdy danej service jezdi
@@ -79,22 +85,28 @@ class Service(object):
         return service_complete # vrátíme objekt třídy Service
 
 class Trip(object):
-    # objekt třídy Trip s atributy id(str), route(Route) a service(Service)
+    """
+    objekt třídy Trip s atributy id(str), route(Route) a service(Service)
+    """
     def __init__ (self, trip_id, route, service):
         self.id=trip_id
         self.route=route
         self.service=service
 
 class StopTime(object):
-    # objekt třídy StopTime s atributy trip(Trip), stop(Stop) a stop_sequence(str)
+    """
+    objekt třídy StopTime s atributy trip(Trip), stop(Stop) a stop_sequence(str)
+    """
     def __init__(self, trip, stop, stop_sequence):
         self.trip=trip
         self.stop=stop
         self.stop_sequence=stop_sequence
 
 class StopSegment(object):
-    # objekt třídy StopSegment s atributy from_stop(Stop), to_stop(Stop), trips(list) a routes(set)
-    # vždy je definovaný dvojicí from_stop a to_stop
+    """
+    objekt třídy StopSegment s atributy from_stop(Stop), to_stop(Stop), trips(list) a routes(set)
+    vždy je definovaný dvojicí from_stop a to_stop
+    """
     def __init__(self, from_stop, to_stop, trip,route):
         self.from_stop = from_stop
         self.to_stop = to_stop
@@ -111,31 +123,30 @@ class StopSegment(object):
             if user_date not in current_stop_time.trip.service.service_days:
                 # když je datum zadané uživatelem není seznamu datumů, kdy funguje service odpovídající tripu odpovídající current_stop_time
                 continue # pokračujeme s další iterací
+            # jinak se cyklus proběhne
+            if current_stop_time.stop_sequence == '1':
+                # když je zastávka první na tripu, přiřadíme zastávku z current_stop_time výchozí zastávce
+                from_stop = current_stop_time.stop
+                continue
+            elif current_stop_time.stop_sequence == '2':
+                # když zastávka 2. na tripu, přiřadíme zastávku z current_stop_time cílové zastávce
+                to_stop = current_stop_time.stop
             else:
-                # jinak se cyklus proběhne
-                if current_stop_time.stop_sequence == '1':
-                    # když je zastávka první na tripu, přiřadíme zastávku z current_stop_time výchozí zastávce
-                    from_stop = current_stop_time.stop
-                    continue
-                elif current_stop_time.stop_sequence == '2':
-                    # když zastávka 2. na tripu, přiřadíme zastávku z current_stop_time cílové zastávce
-                    to_stop = current_stop_time.stop
-                else:
-                    # jinak se z cílové stane výchozí a cílové přiřadíme zastávku z current_stop_time
-                    from_stop = to_stop
-                    to_stop = current_stop_time.stop
-                segment_key=(from_stop.id,to_stop.id) # vytvoříme segment_key z id obou zastávek, což je jednoznačný identifikátor segmentů
-                trip=current_stop_time.trip # objekt třídy Trip uložíme do proměnné
-                route=trip.route.short_name # objekt třídy Route uložíme do proměnné
-                if segment_key not in segment_dict:
-                # když segment_key jestě není jako klíč ve slovníku segmentů:
-                    segment=StopSegment(from_stop,to_stop,trip,route) # vytvoříme objekt třídy StopSegment, který vezme jako parametry proměnné vytvořené během této iterace
-                    segment_dict[(segment_key)]=segment # objekt třídy StopSegment uložíme jako hodnotu do slovníku
-                else:
-                # když ve slovníku už segment_key je:
-                    segment_dict[segment_key].trips.append(trip) # přidáme odpovídající trip do seznamů tripů odpovídajícího segmentu
-                        # pokud v slovníku linek odpovídajího segmentu není aktuální linka uložena, tak jí tam přidáme
-                    segment_dict[segment_key].routes.add(route)
+                # jinak se z cílové stane výchozí a cílové přiřadíme zastávku z current_stop_time
+                from_stop = to_stop
+                to_stop = current_stop_time.stop
+            segment_key=(from_stop.id,to_stop.id) # vytvoříme segment_key z id obou zastávek, což je jednoznačný identifikátor segmentů
+            trip=current_stop_time.trip # objekt třídy Trip uložíme do proměnné
+            route=trip.route.name # objekt třídy Route uložíme do proměnné
+            if segment_key not in segment_dict:
+            # když segment_key jestě není jako klíč ve slovníku segmentů:
+                segment=StopSegment(from_stop,to_stop,trip,route) # vytvoříme objekt třídy StopSegment, který vezme jako parametry proměnné vytvořené během této iterace
+                segment_dict[(segment_key)]=segment # objekt třídy StopSegment uložíme jako hodnotu do slovníku
+            else:
+            # když ve slovníku už segment_key je:
+                segment_dict[segment_key].trips.append(trip) # přidáme odpovídající trip do seznamů tripů odpovídajícího segmentu
+                # pokud v slovníku linek odpovídajího segmentu není aktuální linka uložena, tak jí tam přidáme
+                segment_dict[segment_key].routes.add(route)
         return segment_dict # vratíme cely slovník
     
 
