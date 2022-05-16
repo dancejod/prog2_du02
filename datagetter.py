@@ -8,7 +8,7 @@ try:
     import sys
 
 except ModuleNotFoundError:
-    sys.exit("Pozadovane kniznice neboli najdene. Skontrolujte, ci mate nainstalovane nasledujuce kniznice: requests; zipfile.")
+    sys.exit("Pozadovana kniznica nebola najdena. Skontrolujte, ci mate nainstalovanu kniznicu requests.")
 
 def get_data():
     try:
