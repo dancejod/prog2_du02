@@ -66,5 +66,9 @@ Pracuje s objekty tříd `Trip`, `Stop` a `Route`. Jsou v něj implementovány m
 - `trips` (object) - Objekt třídy `Trip`. Zachovává informaci o spoji a funkčnosti spoje během týdnu.
 - `routes` (object) - Objekt třídy `Rouute`. Zachovává informaci o lince, ke které spoj patří.
 
-V implementované class metodě `get_segment_dict(cls, data_stop_times,date_string)` se vytvoří během cyklu objekty `StopSegment`, z kterých již lze extrahovat informaci o nejfrekventovanejších úsecích. Cyklus projde všechny objekty třídy `StopTimes` v předaném seznamu `data_stop_times` a vytváří pomocí nich dvojice zastávek, které za sebou bezprostředně nasledují a představují jeden mezizastávkový úsek. 
+V implementované class metodě `get_segment_dict(cls, data_stop_times,date_string)` se vytvoří během cyklu objekty `StopSegment`, z kterých již lze extrahovat informaci o nejfrekventovanejších úsecích. Cyklus projde všechny objekty třídy `StopTimes` v předaném seznamu `data_stop_times` a vytváří pomocí nich dvojice zastávek, které za sebou bezprostředně nasledují a představují jeden mezizastávkový úsek. K nim přidá informaci, na kterém spoji a lince se tato dvojice nachází a uloží je do slovníku, kde klíč představuje dvojici zastávek a odkazuje na seznam spojů a linek, které mezi nimi prochází. Výstupem metody je slovník `segment_dict` obsahující takto vytvořené segmenty.
 
+V metodě `print_trip_count_from_segments(cls, segment_dict)` se setřídí slovník segmentů podle délky seznamu spojů jím projíždějících a vytiskne se 5 nejfrekventovanejších spojů.
+
+# Výstup
+V terminálu jsou po spuštění programu a stažení/nestažení nejnovějších dat vypsány nejfrekventovanejší úseky definované dvěma zastávkami společně s počtem spojů a názvem linek.
