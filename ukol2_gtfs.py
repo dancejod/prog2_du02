@@ -40,10 +40,10 @@ def convert_int_date(date_int):
     return data_date_obj
 
 def daterange(start, end):
-    # vezme objekty typu date a vratí seznam datumů v intervalu mezi start a end
-    dates=[]
+    # vezme objekty typu date a vratí set datumů v intervalu mezi start a end
+    dates=set()
     for n in range(int ((end - start).days)+1):
-        dates.append(start + timedelta(n))
+        dates.add(start + timedelta(n))
     return dates
 
 class Stop(object):
@@ -67,7 +67,7 @@ class Service(object):
     @classmethod
     def get_service(cls,service_row):
         # vrátí objekt třídy Service, parametrem je řádek z csv.DictReaderu
-        service_days = [] # sem se budou ukládat dny, kdy service funguje
+        service_days = set() # sem se budou ukládat dny, kdy service funguje
         start,end = convert_int_date(service_row['start_date']),convert_int_date(service_row['end_date']) # konverze datumů ze souboru na objekt třídy date
         service_dates = daterange(start,end) # seznam datumů získaný z intervalu mezi start a end
         week_service_list=[service_row['monday'],service_row['tuesday'],service_row['wednesday'],service_row['thursday'],service_row['friday'],service_row['saturday'],service_row['sunday']]
@@ -76,8 +76,8 @@ class Service(object):
             # iterace přes dny v odpovídajícím intervalu
             day_in_week_int=date.weekday() # uloží se den v týdnu podle data (0-6)
             if week_service_list[day_in_week_int] == '1': 
-                # když service funguje daný den v týdnu, tak ho přidáme do seznamu dní, kdy vybraný service funguje
-                service_days.append(date)
+                # když service funguje daný den v týdnu, tak ho přidáme do setu dní, kdy vybraný service funguje
+                service_days.add(date)
         service_complete=Service(service_row['service_id'],service_days) # sem se uloží objekt třídy Service
         return service_complete # vrátíme objekt třídy Service
 
@@ -96,13 +96,13 @@ class StopTime(object):
         self.stop_sequence=stop_sequence
 
 class StopSegment(object):
-    # objekt třídy StopSegment s atributy from_stop(Stop), to_stop(Stop), trips(list) a routes(list)
+    # objekt třídy StopSegment s atributy from_stop(Stop), to_stop(Stop), trips(list) a routes(set)
     # vždy je definovaný dvojicí from_stop a to_stop
     def __init__(self, from_stop, to_stop, trip,route):
         self.from_stop = from_stop
         self.to_stop = to_stop
         self.trips = [trip]
-        self.routes = [route]
+        self.routes = {route}
         
     @classmethod
     def get_segment_dict(cls, data_stop_times,date_string):
@@ -137,9 +137,8 @@ class StopSegment(object):
                 else:
                 # když ve slovníku už segment_key je:
                     segment_dict[segment_key].trips.append(trip) # přidáme odpovídající trip do seznamů tripů odpovídajícího segmentu
-                    if route not in segment_dict[segment_key].routes:
                         # pokud v slovníku linek odpovídajího segmentu není aktuální linka uložena, tak jí tam přidáme
-                        segment_dict[segment_key].routes.append(route)
+                    segment_dict[segment_key].routes.add(route)
         return segment_dict # vratíme cely slovník
     
 
