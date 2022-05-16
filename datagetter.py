@@ -43,7 +43,7 @@ def get_data():
         sys.exit("Vyprsal cas na poziadavku.")
     
     except exceptions.URLRequired:
-        sys.exit("K suboru nie je zadana platna adresa. Skontrolujte ju a opravte ju.")
+        sys.exit("K suboru nie je zadana platna adresa.")
     
     except HTTPError:
         sys.exit("Nepodarilo sa stiahnut data.")
