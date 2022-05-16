@@ -2,7 +2,7 @@
 
 Program využívá 2 skripty: `ukol2_gtfs.py` a `datagetter.py`. 
 
-Skript `datagetter.py` slouží na stažení nejnovějších dostupných dat, pokud je uživatel vyžaduje. Nachází se v něm funkce, která je zavoláná v hlavním skriptu.
+Skript `datagetter.py` slouží na stažení nejnovějších dostupných dat, pokud je uživatel vyžaduje. Nachází se v něm funkce, která je zavolána v hlavním skriptu.
 
 Na začátku hlavního skriptu `ukol2_gtfs.py` jsou implementované globální metody, které konvertují string na objekt třídy `date` za využití knihovny `datetime`:
 - `convert_user_date(date_user)` - konvertuje datum v parametru `date_user` zadané ve formátu `dd.mm.yyyy`,
@@ -39,7 +39,7 @@ Pracuje s daty načtenými ze souboru `calendar.txt`. V datech jsou služby odpo
 - `id` (string) - ID služby, která sprovozňuje spoje.
 - `service_days` (set) - obsahuje objekty třídy date odpovídající datům, kdy daná služba funguje
 
-Pro získání service_days je implementována třídní metoda `get_service(cls, service_row)`, která má na vstupu parametr `service_row`, což je řádek z csv.DictReaderu. Metoda za použití globální funkce `convert_int_date(date_int)` konvertuje datum prvního a posledního dne fungujícího servicu z původního souboru na objekty třídy `date`. Potom je pomocí metody `daterange(start,end)` získán set dní z intervalu dat, která jsou pro každý service dána ve vstupním souboru. Dále z původních dat uloží do seznamu informaci o tom, zda service funguje daný den v týdnu, seznam je oindexovaný 0–6 což odpovídá dnům pondělí–neděle. Výstupem je objekt třídy `Service`, který obsahuje informaci o dnech, ve kterých daná služba odpovědná za spoj funguje.
+Pro získání service_days je implementována třídní metoda `get_service(cls, service_row)`, která má na vstupu parametr `service_row`, což je řádek z csv.DictReaderu. Metoda za použití globální funkce `convert_int_date(date_int)` konvertuje datum prvního a posledního dne, kdy služba funguje, z původního souboru na objekty třídy `date`. Potom je pomocí metody `daterange(start,end)` získán set dní z intervalu dat, která jsou pro každý service dána ve vstupním souboru. Dále z původních dat uloží do seznamu informaci o tom, zda service funguje daný den v týdnu, seznam je oindexovaný 0–6 což odpovídá dnům pondělí–neděle. Výstupem je objekt třídy `Service`, který obsahuje informaci o dnech, ve kterých daná služba odpovědná za spoj funguje.
 
 ## Třída Trip
 Pracuje s daty načtenými ze souboru `trips.txt`. V datech se nachází spoje z jízdních řádů. Třídě jsou posunuty objekty tříd `Route` a `Service`.
