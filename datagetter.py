@@ -46,4 +46,4 @@ def get_data():
         sys.exit("K suboru nie je zadana platna adresa. Skontrolujte ju a opravte ju.")
     
     except HTTPError:
-        sys.exit("Nepodarilo sa stiahnut data. Zadali ste spravnu adresu?")
+        sys.exit("Nepodarilo sa stiahnut data.")
