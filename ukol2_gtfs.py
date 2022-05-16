@@ -1,7 +1,6 @@
 import csv
 import sys
 from datetime import datetime,date,timedelta
-import datagetter
 
 our_data_stops={}
 our_data_stop_times=[]
@@ -9,7 +8,24 @@ our_data_trips={}
 our_data_routes={}
 our_data_services={}
 
-datagetter.get_data()
+try:
+    import datagetter
+    datagetter.get_data()
+
+except ModuleNotFoundError:
+    sys.exit("Nepodarilo sa nacitat skript datagetter.py. Skontrolujte, ci je umiestneny v rovnakom adresari ako tento skript.")
+
+except FileNotFoundError:
+    sys.exit("Subor datagetter.py nebol najdeny. Skontrolujte, ci je umiestneny v rovnakom adresari ako tento skript.")
+
+except PermissionError:
+    sys.exit("Nemate opravnenia na subor datagetter.py.")
+
+except IOError:
+    sys.exit("Subor datagetter.py neexistuje, alebo nie je v spravnom adresari.")
+
+except:
+    sys.exit("Nieco sa pokazilo, program sa teraz ukonci.")
 
 def convert_user_date(date_user):
     # konvertuje datum zadaný uživatelem (string) na objekt třídy date
